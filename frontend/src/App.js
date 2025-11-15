@@ -6,7 +6,7 @@ import Home from "./pages/Home";
 import Favorites from "./pages/Favorites";
 import AgentDetail from "./pages/AgentDetail";
 import TopAgents from "./pages/TopAgents";
-// import Profile from "./pages/Profile"; // <-- REMOVED
+// import Profile from "./pages/Profile"; // <-- Profile was removed
 import ProtectedRoute from "./components/ProtectedRoute";
 import Weapons from "./pages/Weapons";
 import WeaponDetail from "./pages/WeaponDetail"; // <-- NEW
@@ -52,16 +52,6 @@ function App() {
             </ProtectedRoute>
           }
         />
-        {/* Profile Route REMOVED
-        <Route
-          path="/profile"
-          element={
-            <ProtectedRoute>
-              <Profile />
-            </ProtectedRoute>
-          }
-        />
-        */}
         <Route
           path="/weapons"
           element={

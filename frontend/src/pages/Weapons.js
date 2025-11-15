@@ -1,30 +1,28 @@
 import { useEffect, useState } from "react";
-import axios from "axios"; // Keep for external API
-import { Link } from "react-router-dom";
-import api from "../api"; // Use this for your backend
+import axios from "axios";
+import { Link } from "react-router-dom"; // Import Link
 
 export default function Weapons() {
   const [allWeapons, setAllWeapons] = useState([]); 
   const [filteredWeapons, setFilteredWeapons] = useState([]);
   const [favorites, setFavorites] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(true); // Added loading state
   const token = localStorage.getItem("token");
 
   useEffect(() => {
     const fetchAllData = async () => {
         try {
-            // External API call uses 'axios'
             const weaponsRes = await axios.get("https://valorant-api.com/v1/weapons");
+            // Filter out non-playable items like melee skins etc.
             const playableWeapons = weaponsRes.data.data.filter(w => w.shopData || w.displayName === 'Melee');
             setAllWeapons(playableWeapons);
             setFilteredWeapons(playableWeapons); 
 
-            if (token) {
-              // Your backend call now uses 'api' and has no headers
-              const favoritesRes = await api.get("/api/favorites/weapons/");
-              setFavorites(favoritesRes.data);
-            }
+            const favoritesRes = await axios.get("http://127.0.0.1:8000/api/favorites/weapons/", {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+            setFavorites(favoritesRes.data);
         } catch (error) {
             console.error("Error fetching weapon data:", error);
         } finally {
@@ -32,7 +30,9 @@ export default function Weapons() {
         }
     }
     
-    fetchAllData();
+    if(token) {
+        fetchAllData();
+    }
   }, [token]);
 
   useEffect(() => {
@@ -48,97 +48,164 @@ export default function Weapons() {
 
   const handleLogout = () => {
     localStorage.removeItem("token");
-    localStorage.removeItem("refresh");
     window.location.href = "/";
   };
 
   const toggleFavorite = async (e, weapon) => {
-    e.preventDefault();
-    e.stopPropagation();
+    e.preventDefault(); // <-- Stop the Link click
+    e.stopPropagation(); // <-- Stop event bubbling
 
     const exists = favorites.find((f) => f.weapon_uuid === weapon.uuid);
     
-    try {
-      if (exists) {
-        // No headers needed
-        await api.delete(`/api/favorites/weapons/${exists.id}/`);
-        setFavorites(favorites.filter((f) => f.weapon_uuid !== weapon.uuid));
-      } else {
-        // No headers needed
-        const res = await api.post(
-          "/api/favorites/weapons/",
-          { weapon_uuid: weapon.uuid, weapon_name: weapon.displayName }
-        );
-        setFavorites([...favorites, res.data]);
-      }
-    } catch (err) {
-      console.error("Failed to toggle favorite weapon:", err);
+    if (exists) {
+      await axios.delete(
+        `http://127.0.0.1:8000/api/favorites/weapons/${exists.id}/`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setFavorites(favorites.filter((f) => f.weapon_uuid !== weapon.uuid));
+    } else {
+      const res = await axios.post(
+        "http://127.0.0.1:8000/api/favorites/weapons/",
+        { weapon_uuid: weapon.uuid, weapon_name: weapon.displayName },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setFavorites([...favorites, res.data]);
     }
   };
 
+  // --- Styles ---
+  const cardStyle = {
+    margin: "10px",
+    border: "2px solid #06d6a0",
+    borderRadius: "10px",
+    padding: "10px",
+    textAlign: "center",
+    width: "140px",
+    backgroundColor: "#1a1a1a",
+    color: "white",
+    transition: "transform 0.2s, box-shadow 0.2s",
+    textDecoration: 'none' // <-- Add this for the link
+  };
+  const cardHover = {
+    transform: "scale(1.05)",
+    boxShadow: "0px 0px 15px #06d6a0",
+  };
+  const searchInputStyle = {
+    width: "100%",
+    maxWidth: "400px",
+    padding: "12px",
+    borderRadius: "5px",
+    border: "2px solid #06d6a0",
+    background: "#1a1a1d",
+    color: "white",
+    fontSize: "16px",
+  };
+  const navButtonStyle = {
+      backgroundColor: "#e63946",
+      color: "white",
+      border: "none",
+      padding: "8px 12px",
+      borderRadius: "5px",
+      cursor: "pointer",
+      marginLeft: "10px",
+      textDecoration: "none"
+  };
+  const greenButtonStyle = {
+      ...navButtonStyle,
+      backgroundColor: "#06d6a0",
+  };
+
+  // --- Added Loading Check ---
   if (loading) {
       return (
-        <div className="val-container">
-            <h1>Loading weapons...</h1>
+        <div style={{minHeight: "100vh", backgroundColor: "#0d0d0d", color: "white", padding: "20px"}}>
+            Loading weapons...
         </div>
       );
   }
 
   return (
-    <div className="val-container">
-      <header className="val-header">
-        <h1 style={{color: '#06d6a0'}}>Valorant Weapons</h1>
-        <div className="val-header-nav">
-          <button onClick={handleLogout} className="val-button">
+    <div
+      style={{
+        minHeight: "100vh",
+        backgroundColor: "#0d0d0d",
+        backgroundImage:
+          "url('https://images4.alphacoders.com/126/thumb-1920-1264065.png')",
+        backgroundSize: "cover",
+        backgroundRepeat: "no-repeat",
+        color: "white",
+        padding: "20px",
+      }}
+    >
+      <header style={{ display: "flex", justifyContent: "space-between", alignItems: 'center', flexWrap: 'wrap' }}>
+        <h1 style={{marginRight: '20px'}}>Valorant Weapons</h1>
+        <div style={{display: 'flex', gap: '10px', flexWrap: 'wrap', justifyContent: 'flex-end'}}>
+          <button onClick={handleLogout} style={navButtonStyle}>
             Logout
           </button>
-          <Link to="/home" className="val-button">
+                    
+          <Link to="/home" style={navButtonStyle}>
             Back to Home
           </Link>
-          <Link to="/top-weapons" className="val-button val-button-green">
+          
+          {/* --- Top Weapons Link --- */}
+          <Link to="/top-weapons" style={greenButtonStyle}>
             Top Weapons
           </Link>
+
         </div>
       </header>
       
-      <div className="val-filter-container">
+      <div style={{ padding: "20px 0", textAlign: "center" }}>
         <input
           type="text"
           placeholder="Search weapons..."
-          className="val-search-input val-search-input-green"
+          style={searchInputStyle}
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
         />
       </div>
 
-      <h2>All Weapons</h2>
-      <div className="val-grid">
+      <h2 style={{ marginTop: "20px" }}>All Weapons</h2>
+      <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "center" }}>
+        
         {filteredWeapons.length > 0 ? (
           filteredWeapons.map((weapon) => {
-            if (!weapon.displayIcon) return null;
+            if (!weapon.displayIcon) return null; // Skip weapons without images
             const isFav = favorites.some((f) => f.weapon_uuid === weapon.uuid);
             
             return (
+              // --- WRAPPED CARD IN A LINK ---
               <Link
                 key={weapon.uuid}
                 to={`/weapon/${weapon.uuid}`}
                 state={{ from: '/weapons' }}
-                className="val-card val-card-green"
+                style={cardStyle}
+                onMouseEnter={(e) =>
+                  Object.assign(e.currentTarget.style, cardHover)
+                }
+                onMouseLeave={(e) =>
+                  Object.assign(e.currentTarget.style, cardStyle)
+                }
               >
-                <div>
-                  <div className="val-card-image-container" style={{height: '80px'}}>
-                    <img
-                      src={weapon.displayIcon}
-                      alt={weapon.displayName}
-                      className="val-card-weapon-image"
-                    />
-                  </div>
-                  <h3>{weapon.displayName}</h3>
-                </div>
+                  <img
+                    src={weapon.displayIcon}
+                    alt={weapon.displayName}
+                    style={{ borderRadius: "5px", filter: 'invert(1)', height: '50px', padding: '10px' }}
+                  />
+                  <p style={{ fontWeight: "bold" }}>{weapon.displayName}</p>
 
                 <button
-                  onClick={(e) => toggleFavorite(e, weapon)}
-                  className={`val-button-fav ${isFav ? "remove-green" : "add-green"}`}
+                  onClick={(e) => toggleFavorite(e, weapon)} // <-- Pass event to handler
+                  style={{
+                    backgroundColor: isFav ? "#f1faee" : "#06d6a0",
+                    color: isFav ? "#06d6a0" : "white",
+                    border: "none",
+                    borderRadius: "5px",
+                    padding: "5px 10px",
+                    cursor: "pointer",
+                    zIndex: 2 // Ensure button is clickable
+                  }}
                 >
                   {isFav ? "Unfavorite" : "Favorite"}
                 </button>

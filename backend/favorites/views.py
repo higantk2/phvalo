@@ -80,7 +80,7 @@ class UserFavoritesSearchView(APIView):
             status=status.HTTP_200_OK
         )
 
-# --- NEW: TOP WEAPONS VIEW ---
+# --- THIS IS THE TOP WEAPONS VIEW YOU ASKED FOR ---
 class MostFavoritedWeaponsView(APIView):
     permission_classes = [permissions.AllowAny] 
 
