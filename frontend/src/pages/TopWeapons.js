@@ -2,35 +2,33 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import { Link } from "react-router-dom";
 
-export default function TopAgents() {
-  const [topAgents, setTopAgents] = useState([]);
-  const [allAgents, setAllAgents] = useState({});
+export default function TopWeapons() {
+  const [topWeapons, setTopWeapons] = useState([]);
+  const [allWeapons, setAllWeapons] = useState({});
   const [loading, setLoading] = useState(true);
   const token = localStorage.getItem("token");
 
   useEffect(() => {
-    async function fetchTopAgents() {
+    async function fetchTopWeapons() {
       try {
-        // 1. Fetch all agent data for images
-        const agentsRes = await axios.get(
-          "https://valorant-api.com/v1/agents?isPlayableCharacter=true"
-        );
-        const agentsMap = agentsRes.data.data.reduce((map, agent) => {
-          map[agent.uuid] = agent;
+        // 1. Fetch all weapon data for images
+        const weaponsRes = await axios.get("https://valorant-api.com/v1/weapons");
+        const weaponsMap = weaponsRes.data.data.reduce((map, weapon) => {
+          map[weapon.uuid] = weapon;
           return map;
         }, {});
-        setAllAgents(agentsMap);
+        setAllWeapons(weaponsMap);
 
-        // 2. Fetch top favorited agents
-        const topRes = await axios.get("http://127.0.0.1:8000/api/favorites/top/");
-        setTopAgents(topRes.data);
+        // 2. Fetch top favorited weapons
+        const topRes = await axios.get("http://127.0.0.1:8000/api/favorites/top/weapons/");
+        setTopWeapons(topRes.data);
       } catch (err) {
-        console.error("Failed to load top agents", err);
+        console.error("Failed to load top weapons", err);
       } finally {
         setLoading(false);
       }
     }
-    fetchTopAgents();
+    fetchTopWeapons();
   }, []);
 
   const handleLogout = () => {
@@ -49,7 +47,7 @@ export default function TopAgents() {
   };
   const cardStyle = {
     margin: "10px",
-    border: "2px solid #e63946",
+    border: "2px solid #06d6a0",
     borderRadius: "10px",
     padding: "10px",
     textAlign: "center",
@@ -69,13 +67,13 @@ export default function TopAgents() {
   // ----------------
 
   if (loading) {
-    return <div style={containerStyle}>Loading Top Agents...</div>;
+    return <div style={containerStyle}>Loading Top Weapons...</div>;
   }
 
   return (
     <div style={containerStyle}>
       <header style={{ display: "flex", justifyContent: "space-between", alignItems: 'center' }}>
-        <h1>Top Favorited Agents</h1>
+        <h1>Top Favorited Weapons</h1>
         <div>
           <button onClick={handleLogout} style={navButtonStyle}>
             Logout
@@ -83,33 +81,30 @@ export default function TopAgents() {
           <Link to="/home" style={navButtonStyle}>
             Back to Home
           </Link>
-          {/* Profile Link REMOVED */}
         </div>
       </header>
 
       <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", marginTop: "30px" }}>
-        {topAgents.length > 0 ? (
-          topAgents.map((agent, index) => {
-            const agentData = allAgents[agent.agent_uuid];
-            return agentData ? (
-              <div key={agent.agent_uuid} style={cardStyle}>
-                <h2 style={{ color: "#ff4655" }}>#{index + 1}</h2>
-                <Link to={`/agent/${agent.agent_uuid}`} state={{ from: '/top-agents' }}>
+        {topWeapons.length > 0 ? (
+          topWeapons.map((weapon, index) => {
+            const weaponData = allWeapons[weapon.weapon_uuid];
+            return weaponData ? (
+              <div key={weapon.weapon_uuid} style={cardStyle}>
+                <h2 style={{ color: "#06d6a0" }}>#{index + 1}</h2>
+                <Link to={`/weapon/${weapon.weapon_uuid}`} state={{ from: '/top-weapons' }}>
                   <img
-                    src={agentData.displayIcon}
-                    alt={agentData.displayName}
-                    width="100"
-                    height="100"
-                    style={{ borderRadius: "5px" }}
+                    src={weaponData.displayIcon}
+                    alt={weaponData.displayName}
+                    style={{ borderRadius: "5px", filter: 'invert(1)', height: '50px', padding: '10px' }}
                   />
-                  <p style={{ fontWeight: "bold", color: "white", textDecoration: "none" }}>{agentData.displayName}</p>
+                  <p style={{ fontWeight: "bold", color: "white", textDecoration: "none" }}>{weaponData.displayName}</p>
                 </Link>
-                <p style={{ color: "#ff4655", fontWeight: "bold" }}>{agent.count} Favorites</p>
+                <p style={{ color: "#06d6a0", fontWeight: "bold" }}>{weapon.count} Favorites</p>
               </div>
-            ) : null; // Don't render if agent data not found
+            ) : null;
           })
         ) : (
-          <p>No agents have been favorited yet!</p>
+          <p>No weapons have been favorited yet!</p>
         )}
       </div>
     </div>

@@ -6,9 +6,12 @@ import Home from "./pages/Home";
 import Favorites from "./pages/Favorites";
 import AgentDetail from "./pages/AgentDetail";
 import TopAgents from "./pages/TopAgents";
-import Profile from "./pages/Profile";
+// import Profile from "./pages/Profile"; // <-- REMOVED
 import ProtectedRoute from "./components/ProtectedRoute";
-import Weapons from "./pages/Weapons"; // <-- NEW IMPORT
+import Weapons from "./pages/Weapons";
+import WeaponDetail from "./pages/WeaponDetail"; // <-- NEW
+import FavoriteWeapons from "./pages/FavoriteWeapons"; // <-- NEW
+import TopWeapons from "./pages/TopWeapons"; // <-- NEW
 
 function App() {
   return (
@@ -49,6 +52,7 @@ function App() {
             </ProtectedRoute>
           }
         />
+        {/* Profile Route REMOVED
         <Route
           path="/profile"
           element={
@@ -57,12 +61,37 @@ function App() {
             </ProtectedRoute>
           }
         />
-        {/* --- NEW WEAPONS ROUTE --- */}
+        */}
         <Route
           path="/weapons"
           element={
             <ProtectedRoute>
               <Weapons />
+            </ProtectedRoute>
+          }
+        />
+        {/* --- NEW WEAPON ROUTES --- */}
+        <Route
+          path="/weapon/:weaponUuid"
+          element={
+            <ProtectedRoute>
+              <WeaponDetail />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/favorite-weapons"
+          element={
+            <ProtectedRoute>
+              <FavoriteWeapons />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/top-weapons"
+          element={
+            <ProtectedRoute>
+              <TopWeapons />
             </ProtectedRoute>
           }
         />

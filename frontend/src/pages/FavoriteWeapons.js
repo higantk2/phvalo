@@ -2,32 +2,30 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import { Link } from "react-router-dom";
 
-export default function Favorites() {
+export default function FavoriteWeapons() {
   const [favorites, setFavorites] = useState([]);
-  const [allAgents, setAllAgents] = useState({});
+  const [allWeapons, setAllWeapons] = useState({});
   const [loading, setLoading] = useState(true);
   const token = localStorage.getItem("token");
 
   useEffect(() => {
     async function fetchFavorites() {
       try {
-        // 1. Fetch all agent data for images
-        const agentsRes = await axios.get(
-          "https://valorant-api.com/v1/agents?isPlayableCharacter=true"
-        );
-        const agentsMap = agentsRes.data.data.reduce((map, agent) => {
-          map[agent.uuid] = agent;
+        // 1. Fetch all weapon data for images
+        const weaponsRes = await axios.get("https://valorant-api.com/v1/weapons");
+        const weaponsMap = weaponsRes.data.data.reduce((map, weapon) => {
+          map[weapon.uuid] = weapon;
           return map;
         }, {});
-        setAllAgents(agentsMap);
+        setAllWeapons(weaponsMap);
 
-        // 2. Fetch user's favorites
-        const favoritesRes = await axios.get("http://127.0.0.1:8000/api/favorites/", {
+        // 2. Fetch user's favorite weapons
+        const favoritesRes = await axios.get("http://127.0.0.1:8000/api/favorites/weapons/", {
           headers: { Authorization: `Bearer ${token}` },
         });
         setFavorites(favoritesRes.data);
       } catch (err) {
-        console.error("Failed to load favorites", err);
+        console.error("Failed to load favorite weapons", err);
       } finally {
         setLoading(false);
       }
@@ -45,10 +43,9 @@ export default function Favorites() {
 
   const removeFavorite = async (favId) => {
     try {
-      await axios.delete(`http://127.0.0.1:8000/api/favorites/${favId}/`, {
+      await axios.delete(`http://127.0.0.1:8000/api/favorites/weapons/${favId}/`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      // Update state to remove the favorite
       setFavorites(favorites.filter((fav) => fav.id !== favId));
     } catch (err) {
       console.error("Failed to remove favorite", err);
@@ -66,7 +63,7 @@ export default function Favorites() {
   };
   const cardStyle = {
     margin: "10px",
-    border: "2px solid #e63946",
+    border: "2px solid #06d6a0",
     borderRadius: "10px",
     padding: "10px",
     textAlign: "center",
@@ -86,13 +83,13 @@ export default function Favorites() {
   // ----------------
 
   if (loading) {
-    return <div style={containerStyle}>Loading Favorites...</div>;
+    return <div style={containerStyle}>Loading Favorite Weapons...</div>;
   }
 
   return (
     <div style={containerStyle}>
       <header style={{ display: "flex", justifyContent: "space-between", alignItems: 'center' }}>
-        <h1>My Favorite Agents</h1>
+        <h1>My Favorite Weapons</h1>
         <div>
           <button onClick={handleLogout} style={navButtonStyle}>
             Logout
@@ -100,25 +97,22 @@ export default function Favorites() {
           <Link to="/home" style={navButtonStyle}>
             Back to Home
           </Link>
-          {/* Profile Link REMOVED */}
         </div>
       </header>
 
       <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", marginTop: "30px" }}>
         {favorites.length > 0 ? (
           favorites.map((fav) => {
-            const agentData = allAgents[fav.agent_uuid];
-            return agentData ? (
+            const weaponData = allWeapons[fav.weapon_uuid];
+            return weaponData ? (
               <div key={fav.id} style={cardStyle}>
-                <Link to={`/agent/${fav.agent_uuid}`} state={{ from: '/favorites' }}>
+                <Link to={`/weapon/${fav.weapon_uuid}`} state={{ from: '/favorite-weapons' }}>
                   <img
-                    src={agentData.displayIcon}
-                    alt={agentData.displayName}
-                    width="100"
-                    height="100"
-                    style={{ borderRadius: "5px" }}
+                    src={weaponData.displayIcon}
+                    alt={weaponData.displayName}
+                    style={{ borderRadius: "5px", filter: 'invert(1)', height: '50px', padding: '10px' }}
                   />
-                  <p style={{ fontWeight: "bold", color: "white", textDecoration: "none" }}>{agentData.displayName}</p>
+                  <p style={{ fontWeight: "bold", color: "white", textDecoration: "none" }}>{weaponData.displayName}</p>
                 </Link>
                 <button
                   onClick={() => removeFavorite(fav.id)}
@@ -136,14 +130,13 @@ export default function Favorites() {
                 </button>
               </div>
             ) : (
-              // Fallback in case agent data isn't found
               <div key={fav.id} style={cardStyle}>
-                <p>{fav.agent_name} (Data not found)</p>
+                <p>{fav.weapon_name} (Data not found)</p>
               </div>
             );
           })
         ) : (
-          <p>You haven't favorited any agents yet!</p>
+          <p>You haven't favorited any weapons yet!</p>
         )}
       </div>
     </div>
