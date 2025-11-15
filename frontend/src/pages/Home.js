@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
+import axios from "axios"; // Keep for valorant-api
+import api from "../api"; // <-- IMPORT THIS
 import { Link } from "react-router-dom";
 
 const AGENT_ROLES = ["All", "Duelist", "Initiator", "Controller", "Sentinel"];
@@ -10,9 +11,10 @@ export default function Home() {
   const [favorites, setFavorites] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedRole, setSelectedRole] = useState("All");
-  const token = localStorage.getItem("token");
+  // const token = localStorage.getItem("token"); // No longer needed here
 
   useEffect(() => {
+    // This is external, so axios is fine
     axios
       .get("https://valorant-api.com/v1/agents?isPlayableCharacter=true")
       .then((res) => {
@@ -20,12 +22,11 @@ export default function Home() {
         setFilteredAgents(res.data.data); 
       });
 
-    axios
-      .get("http://127.0.0.1:8000/api/favorites/", {
-        headers: { Authorization: `Bearer ${token}` },
-      })
+    // This is your backend, use 'api'
+    api
+      .get("/api/favorites/") // No headers needed, api.js handles it
       .then((res) => setFavorites(res.data));
-  }, [token]);
+  }, []); // token dependency removed
 
   useEffect(() => {
     let tempAgents = [...allAgents];
@@ -45,28 +46,27 @@ export default function Home() {
 
   const handleLogout = () => {
     localStorage.removeItem("token");
+    localStorage.removeItem("refresh"); // Also remove refresh token
     window.location.href = "/";
   };
 
   const toggleFavorite = async (agent) => {
     const exists = favorites.find((f) => f.agent_uuid === agent.uuid);
     if (exists) {
-      await axios.delete(
-        `http://127.0.0.1:8000/api/favorites/${exists.id}/`,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      // Use 'api' and relative URL
+      await api.delete(`/api/favorites/${exists.id}/`);
       setFavorites(favorites.filter((f) => f.agent_uuid !== agent.uuid));
     } else {
-      const res = await axios.post(
-        "http://127.0.0.1:8000/api/favorites/",
-        { agent_uuid: agent.uuid, agent_name: agent.displayName },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      // Use 'api' and relative URL
+      const res = await api.post("/api/favorites/", { 
+        agent_uuid: agent.uuid, 
+        agent_name: agent.displayName 
+      });
       setFavorites([...favorites, res.data]);
     }
   };
 
-  // --- Styles ---
+  // --- Styles (Your styles are unchanged) ---
   const cardStyle = {
     margin: "10px",
     border: "2px solid #e63946",

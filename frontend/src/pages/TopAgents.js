@@ -1,17 +1,18 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
+import axios from "axios"; // Keep for valorant-api
+import api from "../api"; // <-- IMPORT THIS
 import { Link } from "react-router-dom";
 
 export default function TopAgents() {
   const [topAgents, setTopAgents] = useState([]);
   const [allAgents, setAllAgents] = useState({});
   const [loading, setLoading] = useState(true);
-  const token = localStorage.getItem("token");
+  // const token = localStorage.getItem("token"); // No longer needed here
 
   useEffect(() => {
     async function fetchTopAgents() {
       try {
-        // 1. Fetch all agent data for images
+        // 1. Fetch all agent data for images (external)
         const agentsRes = await axios.get(
           "https://valorant-api.com/v1/agents?isPlayableCharacter=true"
         );
@@ -21,8 +22,8 @@ export default function TopAgents() {
         }, {});
         setAllAgents(agentsMap);
 
-        // 2. Fetch top favorited agents
-        const topRes = await axios.get("http://127.0.0.1:8000/api/favorites/top/");
+        // 2. Fetch top favorited agents (backend)
+        const topRes = await api.get("/api/favorites/top/");
         setTopAgents(topRes.data);
       } catch (err) {
         console.error("Failed to load top agents", err);
@@ -35,10 +36,11 @@ export default function TopAgents() {
 
   const handleLogout = () => {
     localStorage.removeItem("token");
+    localStorage.removeItem("refresh"); // Also remove refresh token
     window.location.href = "/";
   };
 
-  // --- Styles ---
+  // --- Styles (Your styles are unchanged) ---
   const containerStyle = {
     minHeight: "100vh",
     backgroundColor: "#0d0d0d",
@@ -105,7 +107,7 @@ export default function TopAgents() {
                 </Link>
                 <p style={{ color: "#ff4655", fontWeight: "bold" }}>{agent.count} Favorites</p>
               </div>
-            ) : null; // Don't render if agent data not found
+            ) : null; 
           })
         ) : (
           <p>No agents have been favorited yet!</p>

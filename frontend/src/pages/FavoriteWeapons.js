@@ -1,17 +1,18 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
+import axios from "axios"; // Keep for valorant-api
+import api from "../api"; // <-- IMPORT THIS
 import { Link } from "react-router-dom";
 
 export default function FavoriteWeapons() {
   const [favorites, setFavorites] = useState([]);
   const [allWeapons, setAllWeapons] = useState({});
   const [loading, setLoading] = useState(true);
-  const token = localStorage.getItem("token");
+  // const token = localStorage.getItem("token"); // No longer needed here
 
   useEffect(() => {
     async function fetchFavorites() {
       try {
-        // 1. Fetch all weapon data for images
+        // 1. Fetch all weapon data for images (external)
         const weaponsRes = await axios.get("https://valorant-api.com/v1/weapons");
         const weaponsMap = weaponsRes.data.data.reduce((map, weapon) => {
           map[weapon.uuid] = weapon;
@@ -19,10 +20,8 @@ export default function FavoriteWeapons() {
         }, {});
         setAllWeapons(weaponsMap);
 
-        // 2. Fetch user's favorite weapons
-        const favoritesRes = await axios.get("http://127.0.0.1:8000/api/favorites/weapons/", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        // 2. Fetch user's favorite weapons (backend)
+        const favoritesRes = await api.get("/api/favorites/weapons/");
         setFavorites(favoritesRes.data);
       } catch (err) {
         console.error("Failed to load favorite weapons", err);
@@ -31,28 +30,26 @@ export default function FavoriteWeapons() {
       }
     }
 
-    if (token) {
-      fetchFavorites();
-    }
-  }, [token]);
+    fetchFavorites();
+  }, []); // token dependency removed
 
   const handleLogout = () => {
     localStorage.removeItem("token");
+    localStorage.removeItem("refresh"); // Also remove refresh token
     window.location.href = "/";
   };
 
   const removeFavorite = async (favId) => {
     try {
-      await axios.delete(`http://127.0.0.1:8000/api/favorites/weapons/${favId}/`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      // Use 'api' and relative URL
+      await api.delete(`/api/favorites/weapons/${favId}/`);
       setFavorites(favorites.filter((fav) => fav.id !== favId));
     } catch (err) {
       console.error("Failed to remove favorite", err);
     }
   };
 
-  // --- Styles ---
+  // --- Styles (Your styles are unchanged) ---
   const containerStyle = {
     minHeight: "100vh",
     backgroundColor: "#0d0d0d",

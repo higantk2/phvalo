@@ -1,40 +1,44 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import api from "../api"; // <-- UPDATED: Imports api.js
+import axios from "axios"; // Use axios directly for this public page
+import { useNavigate, Link } from "react-router-dom";
 
 export default function Login() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [message, setMessage] = useState(""); // This will show errors
+  const [error, setError] = useState("");
   const navigate = useNavigate();
 
-  const handleLogin = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    setMessage(""); // Clear previous errors
+    setError(""); 
 
     try {
-      // UPDATED: Uses 'api' and a relative path
-      const res = await api.post("/api/users/token/", {
-        username,
-        password,
+      // Use the correct local djoser URL for getting the token
+      const res = await axios.post("http://127.0.0.1:8000/auth/jwt/create/", {
+        username: username,
+        password: password,
       });
-      
-      localStorage.setItem("token", res.data.access);
-      localStorage.setItem("refresh", res.data.refresh); // Kept this from your file
-      navigate("/home");
 
+      if (res.data.access) {
+        localStorage.setItem("token", res.data.access);
+        // Store refresh token if you plan to use it later
+        if (res.data.refresh) {
+          localStorage.setItem("refresh", res.data.refresh);
+        }
+        navigate("/home");
+      }
     } catch (err) {
-      // UPDATED: Better error handling
-      console.error("Login error", err);
-      if (err.response && err.response.data.detail) {
-        setMessage(`❌ ${err.response.data.detail}`);
+      if (err.response) {
+        console.error("Login Error:", err.response.data);
+        setError("Invalid username or password.");
       } else {
-        setMessage("❌ Login failed. Please check your credentials.");
+        setError("Login failed. Please try again.");
+        console.error(err);
       }
     }
   };
 
-  // Kept all your styles from the second file
+  // --- Styles (Kept your existing styles) ---
   const buttonStyle = {
     backgroundColor: "#e63946",
     color: "white",
@@ -53,6 +57,11 @@ export default function Login() {
     transform: "scale(1.05)",
     boxShadow: "0px 0px 15px #e63946",
   };
+  
+  const errorStyle = {
+    color: "#ff4655",
+    marginTop: "10px"
+  };
 
   return (
     <div
@@ -68,7 +77,7 @@ export default function Login() {
       }}
     >
       <form
-        onSubmit={handleLogin}
+        onSubmit={handleSubmit}
         style={{
           backgroundColor: "rgba(0,0,0,0.75)",
           padding: "40px",
@@ -79,6 +88,9 @@ export default function Login() {
         }}
       >
         <h2 style={{ marginBottom: "20px" }}>Login</h2>
+        
+        {error && <p style={errorStyle}>{error}</p>}
+        
         <input
           type="text"
           placeholder="Username"
@@ -91,7 +103,7 @@ export default function Login() {
             marginBottom: "15px",
             borderRadius: "5px",
             border: "none",
-            boxSizing: "border-box" // Added for better padding behavior
+            boxSizing: "border-box" 
           }}
         />
         <input
@@ -106,7 +118,7 @@ export default function Login() {
             marginBottom: "15px",
             borderRadius: "5px",
             border: "none",
-            boxSizing: "border-box" // Added for better padding behavior
+            boxSizing: "border-box"
           }}
         />
         <button
@@ -121,13 +133,6 @@ export default function Login() {
         >
           Login
         </button>
-
-        {message && (
-          // UPDATED: Style for the error message
-          <p style={{ color: "#ff4655", marginTop: "10px", fontWeight: "bold" }}>
-            {message}
-          </p>
-        )}
 
         <p style={{ marginTop: "10px" }}>
           Don't have an account?{" "}

@@ -1,17 +1,18 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
+import axios from "axios"; // Keep for valorant-api
+import api from "../api"; // <-- IMPORT THIS
 import { Link } from "react-router-dom";
 
 export default function Favorites() {
   const [favorites, setFavorites] = useState([]);
   const [allAgents, setAllAgents] = useState({});
   const [loading, setLoading] = useState(true);
-  const token = localStorage.getItem("token");
+  // const token = localStorage.getItem("token"); // No longer needed here
 
   useEffect(() => {
     async function fetchFavorites() {
       try {
-        // 1. Fetch all agent data for images
+        // 1. Fetch all agent data for images (external)
         const agentsRes = await axios.get(
           "https://valorant-api.com/v1/agents?isPlayableCharacter=true"
         );
@@ -21,10 +22,8 @@ export default function Favorites() {
         }, {});
         setAllAgents(agentsMap);
 
-        // 2. Fetch user's favorites
-        const favoritesRes = await axios.get("http://127.0.0.1:8000/api/favorites/", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        // 2. Fetch user's favorites (backend)
+        const favoritesRes = await api.get("/api/favorites/");
         setFavorites(favoritesRes.data);
       } catch (err) {
         console.error("Failed to load favorites", err);
@@ -33,29 +32,26 @@ export default function Favorites() {
       }
     }
 
-    if (token) {
-      fetchFavorites();
-    }
-  }, [token]);
+    fetchFavorites();
+  }, []); // token dependency removed
 
   const handleLogout = () => {
     localStorage.removeItem("token");
+    localStorage.removeItem("refresh"); // Also remove refresh token
     window.location.href = "/";
   };
 
   const removeFavorite = async (favId) => {
     try {
-      await axios.delete(`http://127.0.0.1:8000/api/favorites/${favId}/`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      // Update state to remove the favorite
+      // Use 'api' and relative URL
+      await api.delete(`/api/favorites/${favId}/`);
       setFavorites(favorites.filter((fav) => fav.id !== favId));
     } catch (err) {
       console.error("Failed to remove favorite", err);
     }
   };
 
-  // --- Styles ---
+  // --- Styles (Your styles are unchanged) ---
   const containerStyle = {
     minHeight: "100vh",
     backgroundColor: "#0d0d0d",
@@ -135,7 +131,6 @@ export default function Favorites() {
                 </button>
               </div>
             ) : (
-              // Fallback in case agent data isn't found
               <div key={fav.id} style={cardStyle}>
                 <p>{fav.agent_name} (Data not found)</p>
               </div>

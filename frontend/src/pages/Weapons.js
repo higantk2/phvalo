@@ -1,27 +1,27 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
-import { Link } from "react-router-dom"; // Import Link
+import axios from "axios"; // Keep for valorant-api
+import api from "../api"; // <-- IMPORT THIS
+import { Link } from "react-router-dom"; 
 
 export default function Weapons() {
   const [allWeapons, setAllWeapons] = useState([]); 
   const [filteredWeapons, setFilteredWeapons] = useState([]);
   const [favorites, setFavorites] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
-  const [loading, setLoading] = useState(true); // Added loading state
-  const token = localStorage.getItem("token");
+  const [loading, setLoading] = useState(true); 
+  // const token = localStorage.getItem("token"); // No longer needed here
 
   useEffect(() => {
     const fetchAllData = async () => {
         try {
+            // This is external, so 'axios' is fine
             const weaponsRes = await axios.get("https://valorant-api.com/v1/weapons");
-            // Filter out non-playable items like melee skins etc.
             const playableWeapons = weaponsRes.data.data.filter(w => w.shopData || w.displayName === 'Melee');
             setAllWeapons(playableWeapons);
             setFilteredWeapons(playableWeapons); 
 
-            const favoritesRes = await axios.get("http://127.0.0.1:8000/api/favorites/weapons/", {
-                headers: { Authorization: `Bearer ${token}` },
-            });
+            // This is your backend, use 'api'
+            const favoritesRes = await api.get("/api/favorites/weapons/");
             setFavorites(favoritesRes.data);
         } catch (error) {
             console.error("Error fetching weapon data:", error);
@@ -30,10 +30,8 @@ export default function Weapons() {
         }
     }
     
-    if(token) {
-        fetchAllData();
-    }
-  }, [token]);
+    fetchAllData();
+  }, []); // token dependency removed
 
   useEffect(() => {
     let tempWeapons = [...allWeapons];
@@ -48,32 +46,31 @@ export default function Weapons() {
 
   const handleLogout = () => {
     localStorage.removeItem("token");
+    localStorage.removeItem("refresh"); // Also remove refresh token
     window.location.href = "/";
   };
 
   const toggleFavorite = async (e, weapon) => {
-    e.preventDefault(); // <-- Stop the Link click
-    e.stopPropagation(); // <-- Stop event bubbling
+    e.preventDefault(); 
+    e.stopPropagation(); 
 
     const exists = favorites.find((f) => f.weapon_uuid === weapon.uuid);
     
     if (exists) {
-      await axios.delete(
-        `http://127.0.0.1:8000/api/favorites/weapons/${exists.id}/`,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      // Use 'api' and relative URL
+      await api.delete(`/api/favorites/weapons/${exists.id}/`);
       setFavorites(favorites.filter((f) => f.weapon_uuid !== weapon.uuid));
     } else {
-      const res = await axios.post(
-        "http://127.0.0.1:8000/api/favorites/weapons/",
-        { weapon_uuid: weapon.uuid, weapon_name: weapon.displayName },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      // Use 'api' and relative URL
+      const res = await api.post("/api/favorites/weapons/", { 
+          weapon_uuid: weapon.uuid, 
+          weapon_name: weapon.displayName 
+      });
       setFavorites([...favorites, res.data]);
     }
   };
 
-  // --- Styles ---
+  // --- Styles (Your styles are unchanged) ---
   const cardStyle = {
     margin: "10px",
     border: "2px solid #06d6a0",
@@ -84,7 +81,7 @@ export default function Weapons() {
     backgroundColor: "#1a1a1a",
     color: "white",
     transition: "transform 0.2s, box-shadow 0.2s",
-    textDecoration: 'none' // <-- Add this for the link
+    textDecoration: 'none' 
   };
   const cardHover = {
     transform: "scale(1.05)",
@@ -115,7 +112,6 @@ export default function Weapons() {
       backgroundColor: "#06d6a0",
   };
 
-  // --- Added Loading Check ---
   if (loading) {
       return (
         <div style={{minHeight: "100vh", backgroundColor: "#0d0d0d", color: "white", padding: "20px"}}>
@@ -148,7 +144,6 @@ export default function Weapons() {
             Back to Home
           </Link>
           
-          {/* --- Top Weapons Link --- */}
           <Link to="/top-weapons" style={greenButtonStyle}>
             Top Weapons
           </Link>
@@ -171,11 +166,10 @@ export default function Weapons() {
         
         {filteredWeapons.length > 0 ? (
           filteredWeapons.map((weapon) => {
-            if (!weapon.displayIcon) return null; // Skip weapons without images
+            if (!weapon.displayIcon) return null; 
             const isFav = favorites.some((f) => f.weapon_uuid === weapon.uuid);
             
             return (
-              // --- WRAPPED CARD IN A LINK ---
               <Link
                 key={weapon.uuid}
                 to={`/weapon/${weapon.uuid}`}
@@ -196,7 +190,7 @@ export default function Weapons() {
                   <p style={{ fontWeight: "bold" }}>{weapon.displayName}</p>
 
                 <button
-                  onClick={(e) => toggleFavorite(e, weapon)} // <-- Pass event to handler
+                  onClick={(e) => toggleFavorite(e, weapon)} 
                   style={{
                     backgroundColor: isFav ? "#f1faee" : "#06d6a0",
                     color: isFav ? "#06d6a0" : "white",
@@ -204,7 +198,7 @@ export default function Weapons() {
                     borderRadius: "5px",
                     padding: "5px 10px",
                     cursor: "pointer",
-                    zIndex: 2 // Ensure button is clickable
+                    zIndex: 2 
                   }}
                 >
                   {isFav ? "Unfavorite" : "Favorite"}

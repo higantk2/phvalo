@@ -1,17 +1,17 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
+import axios from "axios"; // Keep for valorant-api
+import api from "../api"; // <-- IMPORT THIS
 import { Link } from "react-router-dom";
 
 export default function TopWeapons() {
   const [topWeapons, setTopWeapons] = useState([]);
   const [allWeapons, setAllWeapons] = useState({});
   const [loading, setLoading] = useState(true);
-  const token = localStorage.getItem("token");
 
   useEffect(() => {
     async function fetchTopWeapons() {
       try {
-        // 1. Fetch all weapon data for images
+        // 1. Fetch all weapon data for images (external, so axios is fine)
         const weaponsRes = await axios.get("https://valorant-api.com/v1/weapons");
         const weaponsMap = weaponsRes.data.data.reduce((map, weapon) => {
           map[weapon.uuid] = weapon;
@@ -19,8 +19,8 @@ export default function TopWeapons() {
         }, {});
         setAllWeapons(weaponsMap);
 
-        // 2. Fetch top favorited weapons
-        const topRes = await axios.get("http://127.0.0.1:8000/api/favorites/top/weapons/");
+        // 2. Fetch top favorited weapons (backend, so use api)
+        const topRes = await api.get("/api/favorites/top/weapons/");
         setTopWeapons(topRes.data);
       } catch (err) {
         console.error("Failed to load top weapons", err);
@@ -33,10 +33,11 @@ export default function TopWeapons() {
 
   const handleLogout = () => {
     localStorage.removeItem("token");
+    localStorage.removeItem("refresh");
     window.location.href = "/";
   };
 
-  // --- Styles ---
+  // --- Styles (Unchanged) ---
   const containerStyle = {
     minHeight: "100vh",
     backgroundColor: "#0d0d0d",
@@ -86,8 +87,8 @@ export default function TopWeapons() {
 
       <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", marginTop: "30px" }}>
         {topWeapons.length > 0 ? (
-          topWeapons.map((weapon, index) => {
-            const weaponData = allWeapons[weapon.weapon_uuid];
+          topWeapons.map((weapon, index) => { // <-- Renders a "weapon"
+            const weaponData = allWeapons[weapon.weapon_uuid]; // <-- Gets "weapon_uuid"
             return weaponData ? (
               <div key={weapon.weapon_uuid} style={cardStyle}>
                 <h2 style={{ color: "#06d6a0" }}>#{index + 1}</h2>
