@@ -1,12 +1,21 @@
 /* --- GLOBAL & FONT STYLES --- */
+:root {
+  --valorant-red: #ff4655;
+  --valorant-dark: #0d0d0d;
+  --valorant-dark-2: #1a1a1a;
+  --valorant-offwhite: #f9f9f9;
+  --valorant-grey: #a3a3a3;
+  --valorant-secondary: #06d6a0; /* We can keep this for special accents if we want, but will use it less */
+}
+
 body {
   margin: 0;
   font-family: 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background-color: #0d0d0d; /* Default dark background */
-  color: #f9f9f9;
+  background-color: var(--valorant-dark);
+  color: var(--valorant-offwhite);
 }
 
 code {
@@ -14,13 +23,29 @@ code {
     monospace;
 }
 
-/* Apply Valorant-style fonts to all headings */
+/* Use Valorant-style fonts (you already had this, which is great) */
 h1, h2, h3, h4, h5, h6 {
   font-family: 'Bebas Neue', sans-serif;
   text-transform: uppercase;
   letter-spacing: 1.5px;
   margin-top: 0;
   margin-bottom: 0.75rem;
+  color: var(--valorant-red);
+}
+
+h1 {
+  font-size: 2.5rem;
+}
+
+h2 {
+  font-size: 2rem;
+  border-bottom: 1px solid var(--valorant-dark-2);
+  padding-bottom: 10px;
+}
+
+h3 {
+  font-size: 1.5rem;
+  color: var(--valorant-offwhite);
 }
 
 /* --- REUSABLE BUTTON STYLES --- */
@@ -28,9 +53,9 @@ h1, h2, h3, h4, h5, h6 {
   font-family: 'Bebas Neue', sans-serif;
   text-transform: uppercase;
   letter-spacing: 1px;
-  font-size: 16px;
-  border: 2px solid #ff4655;
-  background-color: #ff4655;
+  font-size: 1rem;
+  border: 2px solid var(--valorant-red);
+  background-color: var(--valorant-red);
   color: white;
   padding: 8px 16px;
   border-radius: 4px;
@@ -41,83 +66,34 @@ h1, h2, h3, h4, h5, h6 {
   margin-left: 10px;
 }
 
-.val-button-green {
-  /* Inherits from .val-button */
-  border-color: #06d6a0;
-  background-color: #06d6a0;
-}
-
 .val-button:hover {
   background-color: transparent;
-  color: #ff4655;
+  color: var(--valorant-red);
   box-shadow: 0 0 10px rgba(255, 70, 85, 0.7);
 }
 
-.val-button-green:hover {
+/* A secondary button style (less "loud") */
+.val-button-secondary {
+  border-color: var(--valorant-grey);
   background-color: transparent;
-  color: #06d6a0;
-  box-shadow: 0 0 10px rgba(6, 214, 160, 0.7);
+  color: var(--valorant-offwhite);
 }
 
-.val-button-fav {
-  font-family: 'Bebas Neue', sans-serif;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  font-size: 14px;
-  border: none;
-  border-radius: 5px;
-  padding: 5px 10px;
-  cursor: pointer;
-  width: 100%;
+.val-button-secondary:hover {
+  background-color: var(--valorant-grey);
+  color: var(--valorant-dark);
+  border-color: var(--valorant-grey);
+  box-shadow: none;
 }
-
-.val-button-fav.add {
-  background-color: #ff4655;
-  color: white;
-}
-.val-button-fav.add:hover {
-  background-color: #f9f9f9;
-  color: #ff4655;
-}
-
-.val-button-fav.remove {
-  background-color: #f1faee;
-  color: #ff4655;
-}
-.val-button-fav.remove:hover {
-  background-color: #ff4655;
-  color: #f1faee;
-}
-
-/* Green favorite button */
-.val-button-fav.add-green {
-  background-color: #06d6a0;
-  color: white;
-}
-.val-button-fav.add-green:hover {
-  background-color: #f9f9f9;
-  color: #06d6a0;
-}
-.val-button-fav.remove-green {
-  background-color: #f1faee;
-  color: #06d6a0;
-}
-.val-button-fav.remove-green:hover {
-  background-color: #06d6a0;
-  color: #f1faee;
-}
-
 
 /* --- REUSABLE CARD STYLES --- */
 .val-card {
   margin: 10px;
-  border: 2px solid #ff4655;
+  border: 2px solid var(--valorant-dark-2);
   border-radius: 8px;
-  padding: 15px;
   text-align: center;
   width: 180px;
-  min-height: 270px; /* Fixed height for consistency */
-  background-color: rgba(26, 26, 26, 0.85);
+  background-color: var(--valorant-dark-2);
   color: white;
   text-decoration: none;
   transition: all 0.2s ease-in-out;
@@ -127,21 +103,20 @@ h1, h2, h3, h4, h5, h6 {
   overflow: hidden; /* Prevents content spill */
 }
 
-.val-card-green {
-  border-color: #06d6a0;
-}
-
 .val-card:hover {
   transform: scale(1.03);
+  border-color: var(--valorant-red);
   box-shadow: 0 0 15px rgba(255, 70, 85, 0.7);
 }
 
-.val-card-green:hover {
-  transform: scale(1.03);
-  box-shadow: 0 0 15px rgba(6, 214, 160, 0.7);
+/* This is the part you click to go to the detail page */
+.val-card-link {
+  text-decoration: none;
+  color: inherit;
+  padding: 15px;
+  display: block;
 }
 
-/* Image container fixes sizing bugs */
 .val-card-image-container {
   height: 120px; 
   width: 100%;
@@ -163,7 +138,7 @@ h1, h2, h3, h4, h5, h6 {
   max-width: 100%;
   max-height: 100%;
   object-fit: contain;
-  filter: invert(1);
+  filter: invert(0.9); /* Use a softer invert */
 }
 
 .val-card h3 {
@@ -173,22 +148,39 @@ h1, h2, h3, h4, h5, h6 {
   margin-bottom: 10px;
 }
 
-.val-card p {
-  font-size: 14px;
-  margin: 0;
-}
-
-.val-card-leaderboard-count {
+/* Favorite button (fixed) */
+.val-button-fav {
   font-family: 'Bebas Neue', sans-serif;
-  font-size: 20px;
-  color: #ff4655;
-  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-size: 14px;
+  border: none;
+  border-bottom-left-radius: 5px; /* Match card radius */
+  border-bottom-right-radius: 5px; /* Match card radius */
+  padding: 8px 10px;
+  cursor: pointer;
+  width: 100%;
+  transition: all 0.2s ease-in-out;
+  margin-top: auto; /* Pushes button to the bottom */
 }
 
-.val-card-leaderboard-count-green {
-  color: #06d6a0;
+.val-button-fav.add {
+  background-color: var(--valorant-red);
+  color: white;
+}
+.val-button-fav.add:hover {
+  background-color: #f9f9f9;
+  color: var(--valorant-red);
 }
 
+.val-button-fav.remove {
+  background-color: var(--valorant-offwhite);
+  color: var(--valorant-red);
+}
+.val-button-fav.remove:hover {
+  background-color: var(--valorant-red);
+  color: var(--valorant-offwhite);
+}
 
 /* --- PAGE & LAYOUT STYLES --- */
 .val-container {
@@ -210,7 +202,7 @@ h1, h2, h3, h4, h5, h6 {
   align-items: center;
   flex-wrap: wrap;
   gap: 10px;
-  border-bottom: 1px solid #ff4655;
+  border-bottom: 1px solid var(--valorant-red);
   padding-bottom: 20px;
   margin-bottom: 20px;
 }
@@ -222,11 +214,6 @@ h1, h2, h3, h4, h5, h6 {
   justify-content: flex-end;
 }
 
-.val-header h1 {
-  margin-right: 20px;
-  color: #ff4655;
-}
-
 .val-grid {
   display: flex;
   flex-wrap: wrap;
@@ -234,7 +221,7 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .val-filter-container {
-  padding: 20px 0;
+  padding: 20px;
   text-align: center;
   display: flex;
   flex-direction: column;
@@ -250,15 +237,12 @@ h1, h2, h3, h4, h5, h6 {
   max-width: 400px;
   padding: 12px;
   border-radius: 5px;
-  border: 2px solid #ff4655;
+  border: 2px solid var(--valorant-red);
   background: #1a1a1d;
   color: white;
   font-size: 16px;
   font-family: 'Roboto', sans-serif;
-}
-
-.val-search-input-green {
-  border-color: #06d6a0;
+  box-sizing: border-box; /* <-- ADD THIS LINE */
 }
 
 .val-role-filter-container {
@@ -271,9 +255,9 @@ h1, h2, h3, h4, h5, h6 {
 .val-role-button {
   font-family: 'Bebas Neue', sans-serif;
   letter-spacing: 1px;
-  background-color: #1a1a1a;
+  background-color: var(--valorant-dark-2);
   color: white;
-  border: 2px solid #ff4655;
+  border: 2px solid var(--valorant-red);
   padding: 8px 16px;
   border-radius: 5px;
   cursor: pointer;
@@ -282,9 +266,33 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .val-role-button.active {
-  background-color: #ff4655;
-  box-shadow: 0px 0px 10px #ff4655;
+  background-color: var(--valorant-red);
+  box-shadow: 0px 0px 10px var(--valorant-red);
   color: white;
+}
+
+/* --- LOADING SPINNER --- */
+.val-loader-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 50vh;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.val-spinner {
+  border: 8px solid var(--valorant-dark-2);
+  border-top: 8px solid var(--valorant-red);
+  border-radius: 50%;
+  width: 60px;
+  height: 60px;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
 
 /* --- DETAIL PAGE STYLES --- */
@@ -292,13 +300,19 @@ h1, h2, h3, h4, h5, h6 {
   background-color: rgba(26, 26, 26, 0.9);
   padding: 25px;
   border-radius: 12px;
-  border: 1px solid #e63946;
+  border: 1px solid var(--valorant-red);
   max-width: 800px;
   margin: 20px auto;
 }
 
-.val-detail-content-green {
-  border-color: #06d6a0;
+/* We'll use this for weapon pages */
+.val-detail-content.secondary {
+  border-color: var(--valorant-grey);
+}
+.val-detail-content.secondary h1, 
+.val-detail-content.secondary h2 {
+  color: var(--valorant-offwhite);
+  border-bottom: 1px solid var(--valorant-grey);
 }
 
 .val-ability-card {
@@ -313,8 +327,8 @@ h1, h2, h3, h4, h5, h6 {
 .val-ability-icon {
   width: 64px;
   height: 64px;
-  background-color: #1a1a1a;
-  border: 2px solid #e63946;
+  background-color: var(--valorant-dark-2);
+  border: 2px solid var(--valorant-red);
   border-radius: 50%;
   padding: 5px;
   flex-shrink: 0; /* Prevents icon from shrinking */
@@ -322,13 +336,17 @@ h1, h2, h3, h4, h5, h6 {
 
 .val-skin-card {
   margin: 10px;
-  border: 2px solid #06d6a0;
+  border: 2px solid var(--valorant-grey);
   border-radius: 10px;
   padding: 10px;
   text-align: center;
   width: 200px;
-  background-color: #1a1a1a;
+  background-color: var(--valorant-dark-2);
   color: white;
+  transition: all 0.2s ease-in-out;
+}
+.val-skin-card:hover {
+  border-color: var(--valorant-offwhite);
 }
 
 .val-skin-image {
@@ -336,4 +354,65 @@ h1, h2, h3, h4, h5, h6 {
   height: 80px;
   object-fit: contain;
   margin-bottom: 10px;
+}
+/* --- AUTH PAGE STYLES (ADD THIS TO index.css) --- */
+
+/* New container for Login/Register to ensure perfect centering */
+.val-auth-container {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  background-image:
+    linear-gradient(rgba(13, 13, 13, 0.8), rgba(13, 13, 13, 0.8)),
+    url('https://images2.alphacoders.com/135/thumb-1920-1356617.jpeg');
+}
+
+/* A dedicated class for the auth form */
+.val-auth-form {
+  background-color: rgba(26, 26, 26, 0.9);
+  padding: 25px;
+  border-radius: 12px;
+  border: 1px solid var(--valorant-red);
+  width: 100%;
+  max-width: 360px; /* Consistent width for both forms */
+  text-align: center;
+  box-shadow: 0 0 20px rgba(255, 70, 85, 0.7);
+}
+
+.val-auth-form h2 {
+  color: var(--valorant-offwhite);
+  border: none;
+  margin-bottom: 20px;
+}
+
+.val-auth-form .val-search-input {
+  margin-bottom: 15px;
+}
+
+.val-auth-form .val-button {
+  width: 100%;
+  margin: 10px 0 0 0; /* Remove left margin */
+}
+
+.val-auth-form p {
+  margin-top: 15px;
+  color: var(--valorant-grey);
+}
+
+.val-auth-form a {
+  color: var(--valorant-red);
+  font-weight: bold;
+  text-decoration: none;
+}
+
+.val-auth-form a.secondary-link {
+  color: var(--valorant-offwhite);
+  font-weight: normal;
+  font-size: 14px;
 }

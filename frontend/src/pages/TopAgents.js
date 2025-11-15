@@ -1,18 +1,17 @@
 import { useEffect, useState } from "react";
-import axios from "axios"; // Keep for valorant-api
-import api from "../api"; // <-- IMPORT THIS
+import axios from "axios";
+import api from "../api";
 import { Link } from "react-router-dom";
+import Loading from "../components/Loading"; // <-- Import Loading
 
 export default function TopAgents() {
   const [topAgents, setTopAgents] = useState([]);
   const [allAgents, setAllAgents] = useState({});
   const [loading, setLoading] = useState(true);
-  // const token = localStorage.getItem("token"); // No longer needed here
 
   useEffect(() => {
     async function fetchTopAgents() {
       try {
-        // 1. Fetch all agent data for images (external)
         const agentsRes = await axios.get(
           "https://valorant-api.com/v1/agents?isPlayableCharacter=true"
         );
@@ -22,7 +21,6 @@ export default function TopAgents() {
         }, {});
         setAllAgents(agentsMap);
 
-        // 2. Fetch top favorited agents (backend)
         const topRes = await api.get("/api/favorites/top/");
         setTopAgents(topRes.data);
       } catch (err) {
@@ -36,83 +34,57 @@ export default function TopAgents() {
 
   const handleLogout = () => {
     localStorage.removeItem("token");
-    localStorage.removeItem("refresh"); // Also remove refresh token
+    localStorage.removeItem("refresh");
     window.location.href = "/";
   };
 
-  // --- Styles (Your styles are unchanged) ---
-  const containerStyle = {
-    minHeight: "100vh",
-    backgroundColor: "#0d0d0d",
-    color: "white",
-    padding: "40px",
-    backgroundImage: "url('https://images4.alphacoders.com/126/thumb-1200-1264065.png')",
-    backgroundSize: "cover",
-  };
-  const cardStyle = {
-    margin: "10px",
-    border: "2px solid #e63946",
-    borderRadius: "10px",
-    padding: "10px",
-    textAlign: "center",
-    width: "140px",
-    backgroundColor: "#1a1a1a",
-  };
-  const navButtonStyle = {
-    backgroundColor: "#e63946",
-    color: "white",
-    border: "none",
-    padding: "8px 12px",
-    borderRadius: "5px",
-    cursor: "pointer",
-    marginLeft: "10px",
-    textDecoration: "none"
-  };
-  // ----------------
-
-  if (loading) {
-    return <div style={containerStyle}>Loading Top Agents...</div>;
-  }
-
   return (
-    <div style={containerStyle}>
-      <header style={{ display: "flex", justifyContent: "space-between", alignItems: 'center' }}>
+    <div className="val-container">
+      <header className="val-header">
         <h1>Top Favorited Agents</h1>
         <div>
-          <button onClick={handleLogout} style={navButtonStyle}>
+          <button onClick={handleLogout} className="val-button">
             Logout
           </button>
-          <Link to="/home" style={navButtonStyle}>
+          <Link to="/home" className="val-button val-button-secondary">
             Back to Home
           </Link>
         </div>
       </header>
 
-      <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", marginTop: "30px" }}>
-        {topAgents.length > 0 ? (
-          topAgents.map((agent, index) => {
-            const agentData = allAgents[agent.agent_uuid];
-            return agentData ? (
-              <div key={agent.agent_uuid} style={cardStyle}>
-                <h2 style={{ color: "#ff4655" }}>#{index + 1}</h2>
-                <Link to={`/agent/${agent.agent_uuid}`} state={{ from: '/top-agents' }}>
-                  <img
-                    src={agentData.displayIcon}
-                    alt={agentData.displayName}
-                    width="100"
-                    height="100"
-                    style={{ borderRadius: "5px" }}
-                  />
-                  <p style={{ fontWeight: "bold", color: "white", textDecoration: "none" }}>{agentData.displayName}</p>
-                </Link>
-                <p style={{ color: "#ff4655", fontWeight: "bold" }}>{agent.count} Favorites</p>
-              </div>
-            ) : null; 
-          })
-        ) : (
-          <p>No agents have been favorited yet!</p>
-        )}
-      </div>
+      {loading ? (
+        <Loading />
+      ) : (
+        <div className="val-grid" style={{marginTop: "30px"}}>
+          {topAgents.length > 0 ? (
+            topAgents.map((agent, index) => {
+              const agentData = allAgents[agent.agent_uuid];
+              return agentData ? (
+                <div key={agent.agent_uuid} className="val-card">
+                  <Link 
+                    to={`/agent/${agent.agent_uuid}`} 
+                    state={{ from: '/top-agents' }}
+                    className="val-card-link"
+                  >
+                    <h2 style={{ color: "var(--valorant-red)" }}>#{index + 1}</h2>
+                    <div className="val-card-image-container">
+                      <img
+                        src={agentData.displayIcon}
+                        alt={agentData.displayName}
+                        className="val-card-image"
+                      />
+                    </div>
+                    <h3>{agentData.displayName}</h3>
+                  </Link>
+                  <p className="val-card-leaderboard-count">{agent.count} Favorites</p>
+                </div>
+              ) : null;
+            })
+          ) : (
+            <p>No agents have been favorited yet!</p>
+          )}
+        </div>
+      )}
     </div>
   );
 }
