@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { Link } from "react-router-dom";
+import api from "../api"; // <-- ADD THIS
 
 export default function TopWeapons() {
   const [topWeapons, setTopWeapons] = useState([]);
@@ -10,6 +11,7 @@ export default function TopWeapons() {
   useEffect(() => {
     async function fetchTopWeapons() {
       try {
+        // This call is to an external API, so 'axios' is fine
         const weaponsRes = await axios.get("https://valorant-api.com/v1/weapons");
         const weaponsMap = weaponsRes.data.data.reduce((map, weapon) => {
           map[weapon.uuid] = weapon;
@@ -17,7 +19,8 @@ export default function TopWeapons() {
         }, {});
         setAllWeapons(weaponsMap);
 
-        const topRes = await axios.get("http://127.0.0.1:8000/api/favorites/top/weapons/");
+        // --- CHANGED ---
+        const topRes = await api.get("/api/favorites/top/weapons/");
         setTopWeapons(topRes.data);
       } catch (err) {
         console.error("Failed to load top weapons", err);

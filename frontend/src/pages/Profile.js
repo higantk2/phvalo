@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { Link } from "react-router-dom";
+import api from "../api"; // <-- ADD THIS
 
 export default function Profile() {
   const token = localStorage.getItem("token");
@@ -35,14 +36,15 @@ export default function Profile() {
       try {
         const headers = { Authorization: `Bearer ${token}` };
         
+        // --- CHANGED ---
         // 1. Fetch user profile (now includes profile, followers, following)
-        const profileRes = await axios.get("http://127.0.0.1:8000/api/users/profile/", { headers });
+        const profileRes = await api.get("/api/users/profile/", { headers });
         setProfile(profileRes.data);
         // SET NEW STATE from nested profile object
         setBio(profileRes.data.profile.bio); 
         setMainAgent(profileRes.data.profile.main_agent_uuid);
         
-        // 2. Fetch all agents for image/name lookups
+        // 2. Fetch all agents for image/name lookups (external, so 'axios' is fine)
         const agentsRes = await axios.get("https://valorant-api.com/v1/agents?isPlayableCharacter=true");
         const agentsMap = agentsRes.data.data.reduce((map, agent) => {
           map[agent.uuid] = agent;
@@ -50,12 +52,14 @@ export default function Profile() {
         }, {});
         setAllAgents(agentsMap);
 
+        // --- CHANGED ---
         // 3. NEW: Fetch MY favorites (for comparison)
-        const myFavsRes = await axios.get("http://127.0.0.1:8000/api/favorites/", { headers });
+        const myFavsRes = await api.get("/api/favorites/", { headers });
         setMyFavorites(myFavsRes.data);
         
+        // --- CHANGED ---
         // 4. NEW: Fetch MY following list (for follow buttons)
-        const followingRes = await axios.get("http://127.0.0.1:8000/api/users/following/", { headers });
+        const followingRes = await api.get("/api/users/following/", { headers });
         setFollowingList(new Set(followingRes.data)); // Store usernames in a Set
 
       } catch (err) {
@@ -73,8 +77,9 @@ export default function Profile() {
     setPasswordMessage({ text: "Updating...", type: "info" });
     try {
       const headers = { Authorization: `Bearer ${token}` };
-      await axios.post(
-        "http://127.0.0.1:8000/api/users/change-password/",
+      // --- CHANGED ---
+      await api.post(
+        "/api/users/change-password/",
         { old_password: oldPassword, new_password: newPassword },
         { headers }
       );
@@ -93,8 +98,9 @@ export default function Profile() {
     setProfileMessage({ text: "Updating...", type: "info" });
     try {
       const headers = { Authorization: `Bearer ${token}` };
-      await axios.put(
-        "http://127.0.0.1:8000/api/users/profile/update/",
+      // --- CHANGED ---
+      await api.put(
+        "/api/users/profile/update/",
         { bio: bio, main_agent_uuid: mainAgent },
         { headers }
       );
@@ -112,7 +118,8 @@ export default function Profile() {
     setSearchResult(null);
     setComparisonResult(""); // Clear old comparison
     try {
-      const res = await axios.get(`http://127.0.0.1:8000/api/favorites/search/?username=${searchUsername}`);
+      // --- CHANGED ---
+      const res = await api.get(`/api/favorites/search/?username=${searchUsername}`);
       setSearchResult(res.data);
       setSearchMessage(res.data.favorites.length === 0 ? "User found, but they have no favorites." : "");
     } catch (err) {
@@ -125,11 +132,13 @@ export default function Profile() {
   // --- NEW HANDLERS FOR SOCIAL FEATURES ---
   const handleFollowToggle = async (username) => {
     const isFollowing = followingList.has(username);
-    const url = `http://127.0.0.1:8000/api/users/${isFollowing ? 'unfollow' : 'follow'}/`;
+    // --- CHANGED --- (URL was already relative, but now uses 'api')
+    const url = `/api/users/${isFollowing ? 'unfollow' : 'follow'}/`;
     const headers = { Authorization: `Bearer ${token}` };
     
     try {
-      await axios.post(url, { username }, { headers });
+      // --- CHANGED ---
+      await api.post(url, { username }, { headers });
       // Optimistically update the UI
       const newFollowingList = new Set(followingList);
       if (isFollowing) {

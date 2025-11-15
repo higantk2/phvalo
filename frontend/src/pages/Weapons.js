@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { Link } from "react-router-dom";
+import api from "../api"; // <-- ADD THIS
 
 export default function Weapons() {
   const [allWeapons, setAllWeapons] = useState([]); 
@@ -13,12 +14,14 @@ export default function Weapons() {
   useEffect(() => {
     const fetchAllData = async () => {
         try {
+            // This call is to an external API, so 'axios' is fine
             const weaponsRes = await axios.get("https://valorant-api.com/v1/weapons");
             const playableWeapons = weaponsRes.data.data.filter(w => w.shopData || w.displayName === 'Melee');
             setAllWeapons(playableWeapons);
             setFilteredWeapons(playableWeapons); 
 
-            const favoritesRes = await axios.get("http://127.0.0.1:8000/api/favorites/weapons/", {
+            // --- CHANGED ---
+            const favoritesRes = await api.get("/api/favorites/weapons/", {
                 headers: { Authorization: `Bearer ${token}` },
             });
             setFavorites(favoritesRes.data);
@@ -57,14 +60,16 @@ export default function Weapons() {
     const exists = favorites.find((f) => f.weapon_uuid === weapon.uuid);
     
     if (exists) {
-      await axios.delete(
-        `http://127.0.0.1:8000/api/favorites/weapons/${exists.id}/`,
+      // --- CHANGED ---
+      await api.delete(
+        `/api/favorites/weapons/${exists.id}/`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
       setFavorites(favorites.filter((f) => f.weapon_uuid !== weapon.uuid));
     } else {
-      const res = await axios.post(
-        "http://127.0.0.1:8000/api/favorites/weapons/",
+      // --- CHANGED ---
+      const res = await api.post(
+        "/api/favorites/weapons/",
         { weapon_uuid: weapon.uuid, weapon_name: weapon.displayName },
         { headers: { Authorization: `Bearer ${token}` } }
       );

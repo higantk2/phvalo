@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { Link } from "react-router-dom";
+import api from "../api"; // <-- ADD THIS
 
 export default function TopAgents() {
   const [topAgents, setTopAgents] = useState([]);
@@ -10,6 +11,7 @@ export default function TopAgents() {
   useEffect(() => {
     async function fetchTopAgents() {
       try {
+        // This call is to an external API, so 'axios' is fine
         const agentsRes = await axios.get(
           "https://valorant-api.com/v1/agents?isPlayableCharacter=true"
         );
@@ -19,7 +21,8 @@ export default function TopAgents() {
         }, {});
         setAllAgents(agentsMap);
 
-        const topRes = await axios.get("http://127.0.0.1:8000/api/favorites/top/");
+        // --- CHANGED ---
+        const topRes = await api.get("/api/favorites/top/");
         setTopAgents(topRes.data);
       } catch (err) {
         console.error("Failed to load top agents", err);

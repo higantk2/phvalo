@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { Link } from "react-router-dom";
+import api from "../api"; // <-- ADD THIS
 
 const AGENT_ROLES = ["All", "Duelist", "Initiator", "Controller", "Sentinel"];
 
@@ -13,6 +14,7 @@ export default function Home() {
   const token = localStorage.getItem("token");
 
   useEffect(() => {
+    // This call is to an external API, so 'axios' is fine
     axios
       .get("https://valorant-api.com/v1/agents?isPlayableCharacter=true")
       .then((res) => {
@@ -20,8 +22,10 @@ export default function Home() {
         setFilteredAgents(res.data.data); 
       });
 
-    axios
-      .get("http://127.0.0.1:8000/api/favorites/", {
+    // --- CHANGED ---
+    // This call is to your backend, so use 'api'
+    api
+      .get("/api/favorites/", {
         headers: { Authorization: `Bearer ${token}` },
       })
       .then((res) => setFavorites(res.data));
@@ -51,14 +55,16 @@ export default function Home() {
   const toggleFavorite = async (agent) => {
     const exists = favorites.find((f) => f.agent_uuid === agent.uuid);
     if (exists) {
-      await axios.delete(
-        `http://127.0.0.1:8000/api/favorites/${exists.id}/`,
+      // --- CHANGED ---
+      await api.delete(
+        `/api/favorites/${exists.id}/`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
       setFavorites(favorites.filter((f) => f.agent_uuid !== agent.uuid));
     } else {
-      const res = await axios.post(
-        "http://127.0.0.1:8000/api/favorites/",
+      // --- CHANGED ---
+      const res = await api.post(
+        "/api/favorites/",
         { agent_uuid: agent.uuid, agent_name: agent.displayName },
         { headers: { Authorization: `Bearer ${token}` } }
       );

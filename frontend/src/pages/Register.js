@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import axios from "axios";
+import api from "../api"; // <-- CHANGED
 
 export default function Register() {
   const [username, setUsername] = useState("");
@@ -12,7 +12,9 @@ export default function Register() {
     e.preventDefault();
 
     try {
-      const response = await axios.post("http://127.0.0.1:8000/api/users/register/", {
+      // --- CHANGED ---
+      // Used 'api' and the relative URL
+      const response = await api.post("/api/users/register/", {
         username,
         password,
       });
@@ -23,10 +25,16 @@ export default function Register() {
     } catch (error) {
       if (error.response) {
         console.error("❌ Error response:", error.response.data);
-        setMessage(`❌ Registration failed: ${JSON.stringify(error.response.data)}`);
+        // A more user-friendly error
+        const errorData = error.response.data;
+        if (errorData.username) {
+          setMessage(`❌ Registration failed: ${errorData.username[0]}`);
+        } else {
+          setMessage(`❌ Registration failed: ${JSON.stringify(errorData)}`);
+        }
       } else if (error.request) {
         console.error("❌ No response:", error.request);
-        setMessage("❌ No response from server. Is Django running?");
+        setMessage("❌ No response from server. Is the backend deployed and running?");
       } else {
         console.error("❌ Error:", error.message);
         setMessage("❌ Error: " + error.message);
