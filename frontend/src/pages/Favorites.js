@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
+import axios from "axios"; // Keep for external API
 import { Link } from "react-router-dom";
-import api from "../api"; // <-- ADDED
+import api from "../api"; // Use this for your backend
 
 export default function Favorites() {
   const [favorites, setFavorites] = useState([]);
@@ -22,10 +22,8 @@ export default function Favorites() {
         }, {});
         setAllAgents(agentsMap);
 
-        // Your backend
-        const favoritesRes = await api.get("/api/favorites/", { // <-- CHANGED
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        // Your backend - no headers needed
+        const favoritesRes = await api.get("/api/favorites/");
         setFavorites(favoritesRes.data);
       } catch (err) {
         console.error("Failed to load favorites", err);
@@ -41,14 +39,14 @@ export default function Favorites() {
 
   const handleLogout = () => {
     localStorage.removeItem("token");
+    localStorage.removeItem("refresh");
     window.location.href = "/";
   };
 
   const removeFavorite = async (favId) => {
     try {
-      await api.delete(`/api/favorites/${favId}/`, { // <-- CHANGED
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      // No headers needed
+      await api.delete(`/api/favorites/${favId}/`);
       setFavorites(favorites.filter((fav) => fav.id !== favId));
     } catch (err) {
       console.error("Failed to remove favorite", err);

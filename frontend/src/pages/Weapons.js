@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
+import axios from "axios"; // Keep for external API
 import { Link } from "react-router-dom";
-import api from "../api"; // <-- ADDED
+import api from "../api"; // Use this for your backend
 
 export default function Weapons() {
   const [allWeapons, setAllWeapons] = useState([]); 
@@ -14,17 +14,17 @@ export default function Weapons() {
   useEffect(() => {
     const fetchAllData = async () => {
         try {
-            // This is an external API, so 'axios' is fine
+            // External API call uses 'axios'
             const weaponsRes = await axios.get("https://valorant-api.com/v1/weapons");
             const playableWeapons = weaponsRes.data.data.filter(w => w.shopData || w.displayName === 'Melee');
             setAllWeapons(playableWeapons);
             setFilteredWeapons(playableWeapons); 
 
-            // This is your backend, so use 'api'
-            const favoritesRes = await api.get("/api/favorites/weapons/", { // <-- CHANGED
-                headers: { Authorization: `Bearer ${token}` },
-            });
-            setFavorites(favoritesRes.data);
+            if (token) {
+              // Your backend call now uses 'api' and has no headers
+              const favoritesRes = await api.get("/api/favorites/weapons/");
+              setFavorites(favoritesRes.data);
+            }
         } catch (error) {
             console.error("Error fetching weapon data:", error);
         } finally {
@@ -32,9 +32,7 @@ export default function Weapons() {
         }
     }
     
-    if(token) {
-        fetchAllData();
-    }
+    fetchAllData();
   }, [token]);
 
   useEffect(() => {
@@ -50,6 +48,7 @@ export default function Weapons() {
 
   const handleLogout = () => {
     localStorage.removeItem("token");
+    localStorage.removeItem("refresh");
     window.location.href = "/";
   };
 
@@ -59,19 +58,21 @@ export default function Weapons() {
 
     const exists = favorites.find((f) => f.weapon_uuid === weapon.uuid);
     
-    if (exists) {
-      await api.delete( // <-- CHANGED
-        `/api/favorites/weapons/${exists.id}/`, // <-- CHANGED
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      setFavorites(favorites.filter((f) => f.weapon_uuid !== weapon.uuid));
-    } else {
-      const res = await api.post( // <-- CHANGED
-        "/api/favorites/weapons/", // <-- CHANGED
-        { weapon_uuid: weapon.uuid, weapon_name: weapon.displayName },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      setFavorites([...favorites, res.data]);
+    try {
+      if (exists) {
+        // No headers needed
+        await api.delete(`/api/favorites/weapons/${exists.id}/`);
+        setFavorites(favorites.filter((f) => f.weapon_uuid !== weapon.uuid));
+      } else {
+        // No headers needed
+        const res = await api.post(
+          "/api/favorites/weapons/",
+          { weapon_uuid: weapon.uuid, weapon_name: weapon.displayName }
+        );
+        setFavorites([...favorites, res.data]);
+      }
+    } catch (err) {
+      console.error("Failed to toggle favorite weapon:", err);
     }
   };
 

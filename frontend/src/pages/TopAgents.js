@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
+import axios from "axios"; // Keep for external API
 import { Link } from "react-router-dom";
-import api from "../api"; // <-- ADDED
+import api from "../api"; // Use this for your backend
 
 export default function TopAgents() {
   const [topAgents, setTopAgents] = useState([]);
@@ -21,8 +21,8 @@ export default function TopAgents() {
         }, {});
         setAllAgents(agentsMap);
 
-        // Your backend
-        const topRes = await api.get("/api/favorites/top/"); // <-- CHANGED
+        // Your backend (no token needed for this one, but good to use 'api' anyway)
+        const topRes = await api.get("/api/favorites/top/");
         setTopAgents(topRes.data);
       } catch (err) {
         console.error("Failed to load top agents", err);
@@ -35,6 +35,7 @@ export default function TopAgents() {
 
   const handleLogout = () => {
     localStorage.removeItem("token");
+    localStorage.removeItem("refresh");
     window.location.href = "/";
   };
 

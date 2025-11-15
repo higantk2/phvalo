@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
+import axios from "axios"; // Keep this for the external API
 import { Link } from "react-router-dom";
-import api from "../api"; // <-- ADDED
+import api from "../api"; // Use this for your backend
 
 const AGENT_ROLES = ["All", "Duelist", "Initiator", "Controller", "Sentinel"];
 
@@ -11,10 +11,10 @@ export default function Home() {
   const [favorites, setFavorites] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedRole, setSelectedRole] = useState("All");
-  const token = localStorage.getItem("token");
+  const token = localStorage.getItem("token"); // We still need this to know *if* we are logged in
 
   useEffect(() => {
-    // This is an external API, so axios is fine
+    // External API call uses 'axios'
     axios
       .get("https://valorant-api.com/v1/agents?isPlayableCharacter=true")
       .then((res) => {
@@ -22,12 +22,12 @@ export default function Home() {
         setFilteredAgents(res.data.data); 
       });
 
-    // This is your backend, so use 'api'
-    api // <-- CHANGED
-      .get("/api/favorites/", {
-        headers: { Authorization: `Bearer ${token}` },
-      })
-      .then((res) => setFavorites(res.data));
+    if (token) {
+      // Your backend call now uses 'api' and has no headers
+      api.get("/api/favorites/")
+        .then((res) => setFavorites(res.data))
+        .catch(err => console.error("Error fetching favorites:", err));
+    }
   }, [token]);
 
   useEffect(() => {
@@ -48,24 +48,28 @@ export default function Home() {
 
   const handleLogout = () => {
     localStorage.removeItem("token");
+    localStorage.removeItem("refresh"); // Also remove refresh token
     window.location.href = "/";
   };
 
   const toggleFavorite = async (agent) => {
     const exists = favorites.find((f) => f.agent_uuid === agent.uuid);
-    if (exists) {
-      await api.delete( // <-- CHANGED
-        `/api/favorites/${exists.id}/`, // <-- CHANGED
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      setFavorites(favorites.filter((f) => f.agent_uuid !== agent.uuid));
-    } else {
-      const res = await api.post( // <-- CHANGED
-        "/api/favorites/", // <-- CHANGED
-        { agent_uuid: agent.uuid, agent_name: agent.displayName },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      setFavorites([...favorites, res.data]);
+    
+    try {
+      if (exists) {
+        // No headers needed, 'api' adds them
+        await api.delete(`/api/favorites/${exists.id}/`);
+        setFavorites(favorites.filter((f) => f.agent_uuid !== agent.uuid));
+      } else {
+        // No headers needed, 'api' adds them
+        const res = await api.post(
+          "/api/favorites/",
+          { agent_uuid: agent.uuid, agent_name: agent.displayName }
+        );
+        setFavorites([...favorites, res.data]);
+      }
+    } catch (err) {
+      console.error("Failed to toggle favorite", err);
     }
   };
 

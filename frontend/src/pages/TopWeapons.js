@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
+import axios from "axios"; // Keep for external API
 import { Link } from "react-router-dom";
-import api from "../api"; // <-- ADDED
+import api from "../api"; // Use this for your backend
 
 export default function TopWeapons() {
   const [topWeapons, setTopWeapons] = useState([]);
@@ -19,8 +19,8 @@ export default function TopWeapons() {
         }, {});
         setAllWeapons(weaponsMap);
 
-        // Your backend
-        const topRes = await api.get("/api/favorites/top/weapons/"); // <-- CHANGED
+        // Your backend (no token needed, but good to use 'api')
+        const topRes = await api.get("/api/favorites/top/weapons/");
         setTopWeapons(topRes.data);
       } catch (err) {
         console.error("Failed to load top weapons", err);
@@ -33,6 +33,7 @@ export default function TopWeapons() {
 
   const handleLogout = () => {
     localStorage.removeItem("token");
+    localStorage.removeItem("refresh");
     window.location.href = "/";
   };
 
